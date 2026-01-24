@@ -78,19 +78,19 @@ def get_video_id(playlistId):  #Definition of the function which gets you the Vi
 
 
 
-def extract_video_data(video_ids):  # This function is used to pull the video in batch from the videoids.
+def extract_video_data(video_ids_lst):  # This function is used to pull the video in batch from the videoids.
     
     extracted_data = []
 
-    def batch_list(video_ids,batch_size):
-        for video_id in range(0,len(video_ids),batch_size):
-            yield video_ids[video_id:video_id+batch_size]
+    def batch_list(video_ids_lst,batch_size):
+        for video_id in range(0,len(video_ids_lst),batch_size):
+            yield video_ids_lst[video_id:video_id+batch_size]
 
     try:
-        for batch in batch_list(video_ids,maxResults):
+        for batch in batch_list(video_ids_lst,maxResults):
             video_ids_str = ",".join(batch)
 
-            url_batch = f"https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}&key={API_KEY}"
+            url_batch = f"https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}&key={API_KEY}"
             
             #getting a responce from the API
             response = requests.get(url_batch)
@@ -109,7 +109,7 @@ def extract_video_data(video_ids):  # This function is used to pull the video in
                 video_data = {
                     "video_id": video_id,
                     "title": snippet['title'],
-                    "publishedAt": snippet['publisedAt'],
+                    "publishedAt": snippet['publishedAt'],
                     "duration": contentDetails['duration'],
                     "viewCount": statistics.get('viewCount',None),
                     "likeCount": statistics.get('likeCount',None),
@@ -130,11 +130,11 @@ if __name__== "__main__":
     playlistId = get_playlist_id()  #Function call to get the playlist id.
     print(playlistId) #Printing the Playlistid
 
-    video_ids = get_video_id(playlistId) #Function call to get the Video ids.
-    #print(get_video_id(playlistId))   #Printing the Video ids
+    video_ids_lst = get_video_id(playlistId) #Function call to get the Video ids.
+    print(video_ids_lst)   #Printing the Video ids
 
-    #Video_data  = extract_video_data(video_ids)  #Extracting the Video Data from Video id.
-    #print(Video_data)  # Printing the Video data
+    Video_data  = extract_video_data(video_ids_lst)  #Extracting the Video Data from Video id.
+    print(Video_data)  # Printing the Video data
 
 #if we want to run it as script then this main will be executed 
 #BUT if will want to run it as a module then you need to sepecify the file name instead of main or the else will be executed.
