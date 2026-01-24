@@ -12,10 +12,10 @@ def get_playlist_id(): #Defination of tyhe function to get the Playlist id from 
 
     try:
         #Url of the channel list/ Playlist API
-        url = f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={CHANNEL_HANDEL}&key={API_KEY}"
+        url_playlist = f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={CHANNEL_HANDEL}&key={API_KEY}"
 
         #getting a responce from the API
-        response = requests.get(url)
+        response = requests.get(url_playlist)
 
         response.raise_for_status()
         #print(response) #this will print the resonse of the API.
@@ -43,7 +43,7 @@ def get_video_id(playlistId):  #Definition of the function which gets you the Vi
 
     video_ids = [] #creating a list for all video id that we are going to get from APIs.
 
-    pageToken = None  #Initially set to NONE.
+    pageToken = None  #Initially set to NONE for now.
 
     #This is the base URL to fetch the Video ids from Mr. Beast Youtube Channel.
     base_url = f"https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults={maxResults}&playlistId={playlistId}&key={API_KEY}"
@@ -51,12 +51,12 @@ def get_video_id(playlistId):  #Definition of the function which gets you the Vi
     try:
 
         while True:
-            url = base_url
+            url_video = base_url
             if(pageToken):
-                url += f"&pageToken={pageToken}"
+                url_video += f"&pageToken={pageToken}"
             
             #getting a responce from the API
-            response = requests.get(url)
+            response = requests.get(url_video)
 
             response.raise_for_status()
             #print(response) #this will print the resonse of the API.
@@ -78,12 +78,63 @@ def get_video_id(playlistId):  #Definition of the function which gets you the Vi
 
 
 
+def extract_video_data(video_ids):  # This function is used to pull the video in batch from the videoids.
+    
+    extracted_data = []
+
+    def batch_list(video_ids,batch_size):
+        for video_id in range(0,len(video_ids),batch_size):
+            yield video_ids[video_id:video_id+batch_size]
+
+    try:
+        for batch in batch_list(video_ids,maxResults):
+            video_ids_str = ",".join(batch)
+
+            url_batch = f"https://youtube.googleapis.com/youtube/v3/playlistItems?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}&key={API_KEY}"
+            
+            #getting a responce from the API
+            response = requests.get(url_batch)
+
+            response.raise_for_status()
+            #print(response) #this will print the resonse of the API.
+
+            data = response.json()   #Taking the response data in the variable
+    
+            for item in data.get('items',[]):
+                video_id =item['id']
+                snippet = item['snippet']
+                contentDetails = item['contentDetails']
+                statistics = item['statistics']
+
+                video_data = {
+                    "video_id": video_id,
+                    "title": snippet['title'],
+                    "publishedAt": snippet['publisedAt'],
+                    "duration": contentDetails['duration'],
+                    "viewCount": statistics.get('viewCount',None),
+                    "likeCount": statistics.get('likeCount',None),
+                    "commentCount": statistics.get('commentCount',None),
+                }
+
+                extracted_data.append(video_data)
+
+        return extracted_data
+
+    except requests.exceptions.RequestException as e:
+        raise e
+
+
+
 
 if __name__== "__main__": 
     playlistId = get_playlist_id()  #Function call to get the playlist id.
     print(playlistId) #Printing the Playlistid
-    get_video_id(playlistId) #Function call to get the Video ids.
+
+    video_ids = get_video_id(playlistId) #Function call to get the Video ids.
     #print(get_video_id(playlistId))   #Printing the Video ids
+
+    #Video_data  = extract_video_data(video_ids)  #Extracting the Video Data from Video id.
+    #print(Video_data)  # Printing the Video data
 
 #if we want to run it as script then this main will be executed 
 #BUT if will want to run it as a module then you need to sepecify the file name instead of main or the else will be executed.
