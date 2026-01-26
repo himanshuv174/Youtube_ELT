@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import date
 import os
 from dotenv import load_dotenv  
 
@@ -124,17 +125,24 @@ def extract_video_data(video_ids_lst):  # This function is used to pull the vide
         raise e
 
 
+def save_to_json(extracted_data):   #This function will create the json file from data with todays dates in the Data folder 
+    file_path = f"./Data/YT_data_{date.today()}.json" 
+
+    with open(file_path,"w",encoding="utf-8") as json_outfile:
+        json.dump(extracted_data,json_outfile,indent=4,ensure_ascii=False)
 
 
 if __name__== "__main__": 
     playlistId = get_playlist_id()  #Function call to get the playlist id.
-    print(playlistId) #Printing the Playlistid
+    #print(playlistId) #Printing the Playlistid
 
     video_ids_lst = get_video_id(playlistId) #Function call to get the Video ids.
-    print(video_ids_lst)   #Printing the Video ids
+    #print(video_ids_lst)   #Printing the Video ids
 
     Video_data  = extract_video_data(video_ids_lst)  #Extracting the Video Data from Video id.
-    print(Video_data)  # Printing the Video data
+    #print(Video_data)  # Printing the Video data
 
+    save_to_json(Video_data)  #this will call the function to save data as json.
+    print("The is saved in the folder")
 #if we want to run it as script then this main will be executed 
 #BUT if will want to run it as a module then you need to sepecify the file name instead of main or the else will be executed.

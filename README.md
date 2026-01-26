@@ -77,7 +77,3 @@ Both unit and data quality testing are implemented in this project using pystest
 ## **CI-CD**
 
 The CI-CD part of this project is needed for when you make a change the Airflow code, docker image, packages, etc and want to test that the DAGs are still working as expected. CI-CD is implemented using Github Actions.
-
-## **License**
-
-This project is licensed under the MIT License. See the [LICENSE] file for details.
