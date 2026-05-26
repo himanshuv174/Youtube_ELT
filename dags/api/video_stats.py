@@ -1,19 +1,31 @@
 import requests
 import json
 from datetime import date
-import os
-from dotenv import load_dotenv  
+from airflow.decorators import task
+from airflow.models import Variable  # from this the variables dont show up
 
-load_dotenv(dotenv_path="./.env") #Getting the Secrets from .env file i.e API Keys.
-API_KEY = os.getenv("API_KEY")  # reads .env and sets environment variables
+# Making this comment because Airflow already has env variables
+# import os
+# from dotenv import load_dotenv  
+# load_dotenv(dotenv_path="./.env") #Getting the Secrets from .env file i.e API Keys.
 
-CHANNEL_HANDEL = "MrBeast"  #Youtube Channel name.
 
+# API_KEY = os.getenv("API_KEY")  # reads .env and sets environment variables
+# CHANNEL_HANDEL = "MrBeast"  #Youtube Channel name.
+
+
+API_KEY = Variable.get("API_KEY")  # reads .env and sets environment variables
+CHANNEL_HANDLE = Variable.get("CHANNEL_HANDLE")  #Youtube Channel name.
+
+maxResults=50  #For the max number of the videos in a lists.
+
+
+@task
 def get_playlist_id(): #Defination of tyhe function to get the Playlist id from the MR. Beast youtube Channel.
 
     try:
         #Url of the channel list/ Playlist API
-        url_playlist = f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={CHANNEL_HANDEL}&key={API_KEY}"
+        url_playlist = f"https://youtube.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle={CHANNEL_HANDLE}&key={API_KEY}"
 
         #getting a responce from the API
         response = requests.get(url_playlist)
@@ -38,8 +50,8 @@ def get_playlist_id(): #Defination of tyhe function to get the Playlist id from 
         raise e
 
 
-maxResults=50  #For the max number of the videos in a lists.
 
+@task
 def get_video_id(playlistId):  #Definition of the function which gets you the Video id of the playlist that we are getting as an input.
 
     video_ids = [] #creating a list for all video id that we are going to get from APIs.
@@ -78,7 +90,7 @@ def get_video_id(playlistId):  #Definition of the function which gets you the Vi
         raise e
 
 
-
+@task
 def extract_video_data(video_ids_lst):  # This function is used to pull the video in batch from the videoids.
     
     extracted_data = []
@@ -124,9 +136,9 @@ def extract_video_data(video_ids_lst):  # This function is used to pull the vide
     except requests.exceptions.RequestException as e:
         raise e
 
-
+@task
 def save_to_json(extracted_data):   #This function will create the json file from data with todays dates in the Data folder 
-    file_path = f"./Data/YT_data_{date.today()}.json" 
+    file_path = f"./data/YT_data_{date.today()}.json" 
 
     with open(file_path,"w",encoding="utf-8") as json_outfile:
         json.dump(extracted_data,json_outfile,indent=4,ensure_ascii=False)
