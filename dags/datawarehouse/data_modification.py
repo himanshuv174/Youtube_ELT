@@ -7,7 +7,7 @@ table = "yt_api"
 def insert_rows(cur,conn,schema,row):       #this function will take the cursor, connection, schema to differenciate between schemas, and a variable row.
     
     try:
-        if schema = 'staging':     #This has the schema, table and table content of the staging schema only.
+        if schema == 'staging':     #This has the schema, table and table content of the staging schema only.
             video_id = 'video_id'
 
             cur.execute(                         #the value defined like this to store the actual value of the JSON.

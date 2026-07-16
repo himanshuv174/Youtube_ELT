@@ -1,17 +1,14 @@
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from pyscopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor
 
 
 table = "yt_api"
 
 
-
-
-
 def get_conn_cursor():      # To get the connection from the postgres DB, using postgress hook and cursor for connection
     hook = PostgresHook(postgres_conn_id="postgres_db_yt_elt",database="elt_db")
     conn = hook.get_conn()
-    cur = conn.cursor(cursfor_factory=RealDictCursor)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     return conn,cur
 
 #cur.executez(select * from ....)   By the help of cursor we can make the DB Queries run
@@ -25,7 +22,7 @@ def close_conn_cursor(conn,cur):      # Closing the cursor and the connection of
 def create_schema(schema):
     conn,cur = get_conn_cursor()    #getting the connection and cursor
 
-    schema_sql = f"CREATE SCHEMA IF NOT EXIST {schema};"      #writing the DB query for Create schema
+    schema_sql = f"CREATE SCHEMA IF NOT EXISTS {schema};"      #writing the DB query for Create schema
     
     cur.execute(schema_sql)     #this will execute the DB command
     conn.commit()               #this will commit the changes in the DB
